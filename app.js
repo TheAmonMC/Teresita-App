@@ -4,7 +4,7 @@ const BCV_API_URL = "https://bcv.today/api/v1/rate.json";
 const BCV_REFRESH_MS = 30 * 60 * 1000;
 const WHATSAPP_NUMBER = "584167615673";
 
-const API_BASE = "/api/catalog";
+const API_BASE = "/api/catalog.js";
 
 let state = {
   rate: Number(localStorage.getItem("teresita_rate") || DEFAULT_RATE),
