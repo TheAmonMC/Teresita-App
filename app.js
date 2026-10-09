@@ -16,6 +16,7 @@ let category = "Todos";
 let query = "";
 let adminUnlocked = false;
 let cart = {};
+
 try {
   const savedCart = JSON.parse(localStorage.getItem("teresita_cart") || "{}");
   if (savedCart && typeof savedCart === "object" && !Array.isArray(savedCart)) cart = savedCart;
@@ -334,9 +335,6 @@ function moneyUsd(n) {
   }).format(Number(n) || 0);
 }
 
-// Regla de precios de la tienda:
-// 703 se queda en 703; 705-709 suben a 710; 710 se queda en 710.
-// Solo redondeamos hacia la siguiente decena cuando la última cifra es 5 o más.
 function roundStorePrice(n) {
   const value = Math.max(0, Math.floor(Number(n) || 0));
   const lastDigit = value % 10;
@@ -397,9 +395,10 @@ function escapeHtml(s) {
   }[c]));
 }
 
-
 function renderCategories() {
-  $("#categories").innerHTML = cats.map(([name, icon]) =>
+  const catContainer = $("#categories");
+  if (!catContainer) return;
+  catContainer.innerHTML = cats.map(([name, icon]) =>
     `<button class="cat ${name === category ? "active" : ""}" data-cat="${escapeHtml(name)}">${icon} ${escapeHtml(name)}</button>`
   ).join("");
 
@@ -423,51 +422,62 @@ function filtered() {
 }
 
 function render() {
-  $("#rateText").textContent =
-    "Bs. " + new Intl.NumberFormat("es-VE", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(state.rate);
+  if ($("#rateText")) {
+    $("#rateText").textContent =
+      "Bs. " + new Intl.NumberFormat("es-VE", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      }).format(state.rate);
+  }
 
-  $("#updatedText").textContent =
-    state.updated === "hoy" ? "Actualizado hoy" : "Actualizado " + state.updated;
+  if ($("#updatedText")) {
+    $("#updatedText").textContent =
+      state.updated === "hoy" ? "Actualizado hoy" : "Actualizado " + state.updated;
+  }
 
   const list = filtered();
 
-  $("#count").textContent =
-    `${list.length} producto${list.length === 1 ? "" : "s"}`;
+  if ($("#count")) {
+    $("#count").textContent =
+      `${list.length} producto${list.length === 1 ? "" : "s"}`;
+  }
 
-  $("#sectionTitle").textContent =
-    query
-      ? `Resultados para “${escapeHtml(query)}”`
-      : category === "Todos"
-        ? "Todos los productos"
-        : category;
+  if ($("#sectionTitle")) {
+    $("#sectionTitle").textContent =
+      query
+        ? `Resultados para “${escapeHtml(query)}”`
+        : category === "Todos"
+          ? "Todos los productos"
+          : category;
+  }
 
-  $("#clearSearch").hidden = !query;
+  if ($("#clearSearch")) $("#clearSearch").hidden = !query;
   renderCategories();
 
-  $("#products").innerHTML = list.map(p => `
-    <article class="product ${/coca[- ]?cola\s*2\s*l/i.test(p.name) ? "best-seller" : ""} ${p.soldOut ? "product-sold-out" : ""}">
-      ${p.soldOut ? `<div class="sold-out-ribbon">AGOTADO</div>` : (/coca[- ]?cola\s*2\s*l/i.test(p.name) ? `<div class="best-seller-ribbon">Más vendido</div>` : "")}
-      <div class="product-icon ${p.image ? "has-image" : ""}">${p.image ? `<img class="product-image" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}">` : (p.icon || "📦")}</div>
-      <div class="product-meta">
-        <div>
-          <div class="product-name">${escapeHtml(p.name)}</div>
-          <div class="product-cat">${escapeHtml(p.category)}</div>
+  const productsEl = $("#products");
+  if (productsEl) {
+    productsEl.innerHTML = list.map(p => `
+      <article class="product ${/coca[- ]?cola\s*2\s*l/i.test(p.name) ? "best-seller" : ""} ${p.soldOut ? "product-sold-out" : ""}">
+        ${p.soldOut ? `<div class="sold-out-ribbon">AGOTADO</div>` : (/coca[- ]?cola\s*2\s*l/i.test(p.name) ? `<div class="best-seller-ribbon">Más vendido</div>` : "")}
+        <div class="product-icon ${p.image ? "has-image" : ""}">${p.image ? `<img class="product-image" src="${escapeHtml(p.image)}" alt="${escapeHtml(p.name)}">` : (p.icon || "📦")}</div>
+        <div class="product-meta">
+          <div>
+            <div class="product-name">${escapeHtml(p.name)}</div>
+            <div class="product-cat">${escapeHtml(p.category)}</div>
+          </div>
+          <div class="prices">
+            <div class="usd">${moneyUsd(p.priceUsd)}</div>
+            <div class="bs">${p.priceBs !== null && p.priceBs !== undefined && Number.isFinite(Number(p.priceBs)) ? moneyBs(p.priceBs) : moneyBs(p.priceUsd * state.rate)}</div>
+          </div>
         </div>
-        <div class="prices">
-          <div class="usd">${moneyUsd(p.priceUsd)}</div>
-          <div class="bs">${p.priceBs !== null && p.priceBs !== undefined && Number.isFinite(Number(p.priceBs)) ? moneyBs(p.priceBs) : moneyBs(p.priceUsd * state.rate)}</div>
-        </div>
-      </div>
-      <button class="order-btn-mini add-cart-btn" data-add-cart="${p.id}" type="button" ${p.soldOut ? "disabled" : ""}>
-        ${p.soldOut ? "Producto agotado" : "🛒 Agregar al carrito"}
-      </button>
-    </article>
-  `).join("");
+        <button class="order-btn-mini add-cart-btn" data-add-cart="${p.id}" type="button" ${p.soldOut ? "disabled" : ""}>
+          ${p.soldOut ? "Producto agotado" : "🛒 Agregar al carrito"}
+        </button>
+      </article>
+    `).join("");
+  }
 
-  $("#empty").hidden = list.length !== 0;
+  if ($("#empty")) $("#empty").hidden = list.length !== 0;
   document.querySelectorAll("[data-add-cart]").forEach(b => {
     b.onclick = () => addToCart(Number(b.dataset.addCart));
   });
@@ -480,14 +490,21 @@ function setConnectionStatus(msg) {
 }
 
 function openModal(content) {
-  $("#modalContent").innerHTML = content;
-  $("#modal").hidden = false;
-  $("#modal").setAttribute("aria-hidden", "false");
+  const modalContent = $("#modalContent");
+  const modal = $("#modal");
+  if (modalContent) modalContent.innerHTML = content;
+  if (modal) {
+    modal.hidden = false;
+    modal.setAttribute("aria-hidden", "false");
+  }
 }
 
 function closeModal() {
-  $("#modal").hidden = true;
-  $("#modal").setAttribute("aria-hidden", "true");
+  const modal = $("#modal");
+  if (modal) {
+    modal.hidden = true;
+    modal.setAttribute("aria-hidden", "true");
+  }
 }
 
 function saveLocalSettings() {
@@ -597,7 +614,6 @@ function adminPanel() {
     if (ok) await saveSettingsGlobal();
     adminPanel();
   };
-  $("#saveRate").onclick = saveRate;
   $("#publishCatalog").onclick = async () => {
     const btn = $("#publishCatalog");
     btn.disabled = true; btn.textContent = "Publicando…";
@@ -620,7 +636,7 @@ function adminPanel() {
         : "Horario automático activado. La tienda volverá a mostrar el aviso de cierre según el horario de Venezuela.");
     } catch (e) {
       state.forceOpen = previous;
-      alert(e.message || "No se pudo guardar el ajuste. Ejecuta primero el SQL actualizado en Supabase.");
+      alert(e.message || "No se pudo guardar el ajuste.");
     }
     adminPanel();
   };
@@ -678,8 +694,8 @@ function productEditor() {
   $("#backAdmin").onclick = adminPanel;
 
   const draw = () => {
-    const q = $("#adminSearch").value.toLowerCase().trim();
-    const selectedCategory = $("#adminCategory").value;
+    const q = ($("#adminSearch")?.value || "").toLowerCase().trim();
+    const selectedCategory = $("#adminCategory")?.value || "Todos";
     const filteredAdmin = state.products.filter(p =>
       (selectedCategory === "Todos" || p.category === selectedCategory) &&
       (p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q))
@@ -773,18 +789,30 @@ function productEditor() {
           saveLocalProducts();
           normalizeCart();
           render();
+          button.style.background = "#16a34a";
+          button.textContent = "✓";
+          setTimeout(() => draw(), 800);
         } catch (error) {
           alert(error.message || "No se pudo guardar el producto en la nube.");
-          return;
         }
-        button.style.background = "#16a34a";
-        button.style.color = "white";
-        button.textContent = "¡Guardado!";
-        setTimeout(() => {
-          button.style.background = "var(--soft)";
-          button.style.color = "var(--brand)";
-          button.textContent = "Guardar";
-        }, 1200);
+      };
+    });
+
+    document.querySelectorAll("[data-toggle]").forEach(button => {
+      button.onclick = async () => {
+        const id = Number(button.dataset.toggle);
+        const item = state.products.find(x => x.id === id);
+        if (!item) return;
+        item.active = item.active === false;
+        try {
+          await saveProductGlobal(item);
+          saveLocalProducts();
+          normalizeCart();
+          render();
+          draw();
+        } catch (error) {
+          alert(error.message || "No se pudo actualizar el producto.");
+        }
       };
     });
 
@@ -801,23 +829,8 @@ function productEditor() {
           render();
           draw();
         } catch (error) {
-          item.soldOut = !item.soldOut;
-          alert(error.message || "No se pudo actualizar el estado del producto.");
+          alert(error.message || "No se pudo actualizar la disponibilidad.");
         }
-      };
-    });
-
-    document.querySelectorAll("[data-toggle]").forEach(button => {
-      button.onclick = async () => {
-        const id = Number(button.dataset.toggle);
-        const item = state.products.find(x => x.id === id);
-        if (!item) return;
-        item.active = item.active === false;
-        try { await saveProductGlobal(item); } catch (error) { item.active = item.active === false; alert(error.message || "No se pudo publicar el cambio."); return; }
-        saveLocalProducts();
-        normalizeCart();
-        render();
-        draw();
       };
     });
 
@@ -826,59 +839,109 @@ function productEditor() {
         const id = Number(button.dataset.removeImage);
         const item = state.products.find(x => x.id === id);
         if (!item) return;
+        if (!confirm(`¿Eliminar la imagen de "${item.name}"?`)) return;
+        item.image = "";
         try {
-          await apiRequest("remove-image", { method: "POST", body: JSON.stringify({ id }) });
-          item.image = "";
+          await saveProductGlobal(item);
           saveLocalProducts();
           render();
           draw();
-        } catch (error) { alert(error.message || "No se pudo quitar la imagen."); }
+        } catch (error) {
+          alert(error.message || "No se pudo eliminar la imagen.");
+        }
       };
     });
   };
 
-  $("#adminSearch").oninput = draw;
-  $("#adminCategory").onchange = draw;
-  $("#resetCatalog").onclick = async () => {
-    if (!confirm("¿Restaurar todos los productos a los valores originales? Se perderán precios, imágenes y cambios guardados en este navegador.")) return;
-    resetLocalProducts();
-    normalizeCart();
-    try { await publishCatalogGlobal(); alert("Catálogo restaurado y publicado para todos."); }
-    catch (error) { alert(error.message || "No se pudo publicar el catálogo restaurado."); }
-    render();
-    draw();
-  };
+  if ($("#adminSearch")) $("#adminSearch").oninput = draw;
+  if ($("#adminCategory")) $("#adminCategory").onchange = draw;
+  if ($("#resetCatalog")) {
+    $("#resetCatalog").onclick = () => {
+      if (!confirm("¿Restaurar los productos locales por defecto?")) return;
+      resetLocalProducts();
+      render();
+      draw();
+    };
+  }
+
   draw();
 }
 
-async function loadStore() {
-  const savedProducts = localStorage.getItem("teresita_products");
-  try {
-    state.products = savedProducts ? JSON.parse(savedProducts) : localProducts().map(p => ({ ...p }));
-  } catch { state.products = localProducts().map(p => ({ ...p })); }
-  normalizeCart();
-  setConnectionStatus("Conectando con la tienda…");
-  render();
-  const cloudLoaded = await loadPublicStore();
-  if (cloudLoaded) {
-    normalizeCart();
-    saveLocalProducts();
-    render();
-    setConnectionStatus("Catálogo sincronizado · cambios globales activos");
-  } else {
-    setConnectionStatus("Catálogo local · publica el catálogo desde Administración para sincronizarlo");
-  }
-  await updateBCVRate({ silent: true });
-  window.setInterval(() => updateBCVRate({ silent: true }), BCV_REFRESH_MS);
-  window.setInterval(async () => {
-    const ok = await loadPublicStore();
-    if (ok) { normalizeCart(); saveLocalProducts(); render(); }
-  }, 60 * 1000);
+function isStoreOpen() {
+  if (state.forceOpen) return true;
+  const now = new Date();
+  const utcMs = now.getTime() + (now.getTimezoneOffset() * 60000);
+  const veTime = new Date(utcMs + (3600000 * -4)); // Horario VET (UTC-4)
+  const hour = veTime.getHours();
+  return hour >= 8 && hour < 18; // Abierto de 8:00 AM a 6:00 PM
 }
 
-$("#modal").addEventListener("click", e => {
-  if (e.target.id === "modal") closeModal();
-});
+function updateClosingNotice() {
+  const open = isStoreOpen();
+  const banner = $("#storeClosedBanner");
+  if (open) {
+    document.body.classList.remove("store-closed");
+    if (banner) banner.hidden = true;
+  } else {
+    document.body.classList.add("store-closed");
+    if (banner) {
+      banner.hidden = false;
+      banner.textContent = "🌙 Tienda cerrada. Horario de atención: 8:00 AM a 6:00 PM (Hora de Venezuela).";
+    }
+  }
+}
+
+async function init() {
+  const loadedServer = await loadPublicStore();
+  if (!loadedServer) {
+    const savedLocal = localStorage.getItem("teresita_products");
+    if (savedLocal) {
+      try { state.products = JSON.parse(savedLocal); } catch (_) { state.products = localProducts(); }
+    } else {
+      state.products = localProducts().map(p => ({ ...p }));
+    }
+  }
+
+  const searchInput = $("#searchInput") \vert{}\vert{} $("#q");
+  if (searchInput) {
+    searchInput.oninput = (e) => {
+      query = e.target.value;
+      render();
+    };
+  }
+
+  const clearSearchBtn = $("#clearSearch");
+  if (clearSearchBtn) {
+    clearSearchBtn.onclick = () => {
+      query = "";
+      if (searchInput) searchInput.value = "";
+      render();
+    };
+  }
+
+  const cartBtn = $("#cartBtn");
+  if (cartBtn) cartBtn.onclick = openCart;
+
+  const adminBtn = $("#adminBtn");
+  if (adminBtn) adminBtn.onclick = adminLogin;
+
+  const modal = $("#modal");
+  if (modal) {
+    modal.onclick = (e) => {
+      if (e.target === modal) closeModal();
+    };
+  }
+
+  normalizeCart();
+  render();
+  updateClosingNotice();
+
+  updateBCVRate({ silent: true });
+  setInterval(() => updateBCVRate({ silent: true }), BCV_REFRESH_MS);
+  setInterval(updateClosingNotice, 60000);
+}
+
+document.addEventListener("DOMContentLoaded", init);
 
 $("#search").addEventListener("input", e => {
   query = e.target.value;
