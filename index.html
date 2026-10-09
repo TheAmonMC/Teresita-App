@@ -1,0 +1,985 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="description" content="Catálogo y precios de Variedades Teresita">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon.svg">
+<title>Variedades Teresita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="app-shell">
+<header class="topbar">
+  <div class="brand" aria-label="Variedades Teresita">
+    <img class="brand-logo" src="/assets/logo-2-transparent.png" alt="Variedades Teresita">
+  </div>
+  <div class="top-actions">
+    <button class="cart-trigger" id="cartBtn" aria-label="Abrir carrito">
+      🛒 <span>Carrito</span><b id="cartCount" hidden>0</b>
+    </button>
+    <button class="icon-btn" id="helpBtn" aria-label="Cómo comprar">?</button>
+    <button class="icon-btn" id="themeBtn" aria-label="Cambiar tema">☼</button>
+    <button class="icon-btn assistant-trigger" id="assistantBtn" aria-label="Asistente de ayuda" title="Asistente de ayuda">✦</button>
+  </div>
+</header>
+
+<main>
+<section class="hero hero-banner" aria-label="Variedades Teresita - Todo lo que necesitas en un solo lugar">
+  <img class="hero-banner-img" src="/assets/banner-teresita.png" alt="Variedades Teresita - Todo lo que necesitas en un solo lugar">
+  <div class="hero-banner-overlay">
+    <div class="hero-info-row">
+      <div class="rate-pill"><span class="live-dot"></span><b>BCV</b><span id="rateText">Bs. 873,87</span><small id="updatedText">Actualizado hoy</small></div>
+      <div class="payment-mini" aria-label="Métodos de pago">
+        <span class="payment-mini-label">Pagamos fácil</span>
+        <div class="payment-mini-item"><img src="/assets/pago-movil.svg" alt="Pago Móvil"><b>Pago Móvil</b></div>
+        <div class="payment-mini-item"><img src="/assets/punto-de-venta.svg" alt="Punto de Venta"><b>Punto de Venta</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="store-logos" aria-label="Logos de Variedades Teresita">
+  <div class="store-logo" title="Logo clásico"><img src="/assets/logo-1.jpg" alt="Variedades Teresita - logo clásico"></div>
+  <div class="store-logo" title="Logo de temporada"><img src="/assets/logo-2-transparent.png" alt="Variedades Teresita - logo de temporada"></div>
+  <div class="store-logo" title="Logo especial"><img src="/assets/logo-3.png" alt="Variedades Teresita - logo especial"></div>
+</section>
+<div class="connection-status" id="connectionStatus">Conectando con la tienda…</div>
+
+<section class="toolbar">
+  <div class="search-wrap"><span>⌕</span><input id="search" placeholder="¿Qué estás buscando?" autocomplete="off"><button id="clearSearch" hidden>×</button></div>
+</section>
+<section class="categories" id="categories"></section>
+
+<section class="closing-notice" id="closingNotice" hidden aria-live="polite" aria-label="Horario de la tienda">
+  <div class="closing-icon">🌙</div>
+  <div class="closing-copy">
+    <span class="closing-eyebrow">HORARIO DE LA TIENDA</span>
+    <h2>Ya cerramos por hoy 💚</h2>
+    <p>¡Gracias por visitarnos! Te esperamos mañana.</p>
+  </div>
+  <div class="opening-countdown">
+    <span>Abrimos nuevamente en</span>
+    <strong id="openingCountdown">00:00:00</strong>
+  </div>
+</section>
+
+<section class="order-section" aria-label="Pedir ahora por WhatsApp">
+  <div class="order-copy">
+    <span class="order-icon">💬</span>
+    <div>
+      <span class="order-eyebrow">¿YA SABES QUÉ QUIERES?</span>
+      <h2>Pide tus productos directamente</h2>
+      <p>Escríbenos por WhatsApp y te ayudamos con tu pedido.</p>
+    </div>
+  </div>
+  <button class="order-btn" id="openCartOrder" type="button">
+    <span>🛒</span> <strong>Ver carrito</strong>
+  </button>
+</section>
+
+<section class="section-head">
+  <div><span class="eyebrow">CATÁLOGO</span><h2 id="sectionTitle">Todos los productos</h2></div>
+  <span class="count" id="count">110 productos</span>
+</section>
+<div id="products" class="product-grid"></div>
+
+<section class="empty" id="empty" hidden><div>🔎</div><h3>No encontramos ese producto</h3><p>Prueba con otro nombre o cambia de categoría.</p></section>
+</main>
+
+<footer><div><b>Variedades Teresita</b><span>Precios sujetos a actualización de la tienda.</span></div><button class="admin-link" id="adminBtn">⚙ Administración</button></footer>
+</div>
+
+<div id="cartToast" class="cart-toast" role="status"></div>\n\n<div id="modal" hidden aria-hidden="true">
+ <div class="modal" id="modalContent"></div>
+</div>
+<script>
+window.PRODUCTS = [
+  {
+    "id": 1,
+    "name": "Tequeños (Bandeja)",
+    "category": "Combos y Refrescos",
+    "priceUsd": 2.0,
+    "icon": "🥖",
+    "active": true
+  },
+  {
+    "id": 2,
+    "name": "Combo Escolar",
+    "category": "Combos y Refrescos",
+    "priceUsd": 1.0,
+    "icon": "🎒",
+    "active": true
+  },
+  {
+    "id": 3,
+    "name": "Pastelitos (Unidad)",
+    "category": "Combos y Refrescos",
+    "priceUsd": 2.2,
+    "icon": "🥟",
+    "active": true
+  },
+  {
+    "id": 4,
+    "name": "Refresco 350ml",
+    "category": "Combos y Refrescos",
+    "priceUsd": 0.65,
+    "icon": "🥤",
+    "active": true
+  },
+  {
+    "id": 5,
+    "name": "Coca-Cola 1L",
+    "category": "Combos y Refrescos",
+    "priceUsd": 1.1,
+    "icon": "🥤",
+    "active": true
+  },
+  {
+    "id": 6,
+    "name": "Refresco Retornable",
+    "category": "Combos y Refrescos",
+    "priceUsd": 1.0,
+    "icon": "🍾",
+    "active": true
+  },
+  {
+    "id": 7,
+    "name": "Refresco 1.5L",
+    "category": "Combos y Refrescos",
+    "priceUsd": 1.6,
+    "icon": "🥤",
+    "active": true
+  },
+  {
+    "id": 8,
+    "name": "Coca-Cola 2L",
+    "category": "Combos y Refrescos",
+    "priceUsd": 1.8,
+    "icon": "🥤",
+    "active": true
+  },
+  {
+    "id": 9,
+    "name": "Jugo del Valle 500ml",
+    "category": "Combos y Refrescos",
+    "priceUsd": 0.82,
+    "icon": "🧃",
+    "active": true
+  },
+  {
+    "id": 10,
+    "name": "Jugo del Valle 1.5L",
+    "category": "Combos y Refrescos",
+    "priceUsd": 1.67,
+    "icon": "🧃",
+    "active": true
+  },
+  {
+    "id": 11,
+    "name": "Jugo P Frubys",
+    "category": "Combos y Refrescos",
+    "priceUsd": 0.7,
+    "icon": "🧃",
+    "active": true
+  },
+  {
+    "id": 12,
+    "name": "Jugo Ufresh",
+    "category": "Combos y Refrescos",
+    "priceUsd": 0.6,
+    "icon": "🧃",
+    "active": true
+  },
+  {
+    "id": 13,
+    "name": "Jugo Frubys Grande",
+    "category": "Combos y Refrescos",
+    "priceUsd": 1.2,
+    "icon": "🧃",
+    "active": true
+  },
+  {
+    "id": 14,
+    "name": "Powerade Deportivo",
+    "category": "Combos y Refrescos",
+    "priceUsd": 1.8,
+    "icon": "⚡",
+    "active": true
+  },
+  {
+    "id": 15,
+    "name": "Malta 1.5L",
+    "category": "Combos y Refrescos",
+    "priceUsd": 2.15,
+    "icon": "🍺",
+    "active": true
+  },
+  {
+    "id": 16,
+    "name": "Malta Polar 355ml",
+    "category": "Combos y Refrescos",
+    "priceUsd": 1.1,
+    "icon": "🍺",
+    "active": true
+  },
+  {
+    "id": 17,
+    "name": "Agua Mineral 600ml",
+    "category": "Combos y Refrescos",
+    "priceUsd": 0.6,
+    "icon": "💧",
+    "active": true
+  },
+  {
+    "id": 18,
+    "name": "Helados EFE",
+    "category": "Combos y Refrescos",
+    "priceUsd": 1.2,
+    "icon": "🍦",
+    "active": true
+  },
+  {
+    "id": 19,
+    "name": "Salsa Especial para Pastelitos",
+    "category": "Combos y Refrescos",
+    "priceUsd": 0.4,
+    "icon": "🥫",
+    "active": true
+  },
+  {
+    "id": 20,
+    "name": "Chorizo Ahumado",
+    "category": "Charcutería",
+    "priceUsd": 8.0,
+    "icon": "🌭",
+    "active": true
+  },
+  {
+    "id": 21,
+    "name": "Salchicha Paquete (22)",
+    "category": "Charcutería",
+    "priceUsd": 6.0,
+    "icon": "🌭",
+    "active": true
+  },
+  {
+    "id": 22,
+    "name": "Salchicha (1 Unidad)",
+    "category": "Charcutería",
+    "priceUsd": 0.27,
+    "icon": "🌭",
+    "active": true
+  },
+  {
+    "id": 23,
+    "name": "Queso Blanco Llanero (1kg)",
+    "category": "Charcutería",
+    "priceUsd": 9.0,
+    "icon": "🧀",
+    "active": true
+  },
+  {
+    "id": 24,
+    "name": "Nata Criolla",
+    "category": "Charcutería",
+    "priceUsd": 4.0,
+    "icon": "🥣",
+    "active": true
+  },
+  {
+    "id": 25,
+    "name": "Mortadela Especial",
+    "category": "Charcutería",
+    "priceUsd": 6.5,
+    "icon": "🥓",
+    "active": true
+  },
+  {
+    "id": 26,
+    "name": "Jamón de Pierna",
+    "category": "Charcutería",
+    "priceUsd": 7.5,
+    "icon": "🥩",
+    "active": true
+  },
+  {
+    "id": 27,
+    "name": "Jamón Arepero",
+    "category": "Charcutería",
+    "priceUsd": 8.5,
+    "icon": "🥪",
+    "active": true
+  },
+  {
+    "id": 28,
+    "name": "Medio Cartón de Huevos (15 un)",
+    "category": "Charcutería",
+    "priceUsd": 3.8,
+    "icon": "🥚",
+    "active": true
+  },
+  {
+    "id": 29,
+    "name": "Cartón de Huevos (30 un)",
+    "category": "Charcutería",
+    "priceUsd": 7.6,
+    "icon": "🥚",
+    "active": true
+  },
+  {
+    "id": 30,
+    "name": "Huevo por Unidad",
+    "category": "Charcutería",
+    "priceUsd": 0.25,
+    "icon": "🥚",
+    "active": true
+  },
+  {
+    "id": 31,
+    "name": "Ibuprofeno 400mg",
+    "category": "Fármacos",
+    "priceUsd": 0.2,
+    "icon": "💊",
+    "active": true
+  },
+  {
+    "id": 32,
+    "name": "Amoxicilina 500mg",
+    "category": "Fármacos",
+    "priceUsd": 0.28,
+    "icon": "💊",
+    "active": true
+  },
+  {
+    "id": 33,
+    "name": "Vitamina C Efervescente",
+    "category": "Fármacos",
+    "priceUsd": 3.0,
+    "icon": "🍊",
+    "active": true
+  },
+  {
+    "id": 34,
+    "name": "Noxpirin Cápsulas",
+    "category": "Fármacos",
+    "priceUsd": 0.75,
+    "icon": "💊",
+    "active": true
+  },
+  {
+    "id": 35,
+    "name": "Cetirizina 10mg",
+    "category": "Fármacos",
+    "priceUsd": 0.15,
+    "icon": "💊",
+    "active": true
+  },
+  {
+    "id": 36,
+    "name": "Ciprofloxacina 500mg",
+    "category": "Fármacos",
+    "priceUsd": 2.2,
+    "icon": "💊",
+    "active": true
+  },
+  {
+    "id": 37,
+    "name": "Diclofenac Potásico",
+    "category": "Fármacos",
+    "priceUsd": 0.15,
+    "icon": "💊",
+    "active": true
+  },
+  {
+    "id": 38,
+    "name": "Metronidazol 500mg",
+    "category": "Fármacos",
+    "priceUsd": 0.24,
+    "icon": "💊",
+    "active": true
+  },
+  {
+    "id": 39,
+    "name": "Omeprazol 20mg",
+    "category": "Fármacos",
+    "priceUsd": 0.18,
+    "icon": "💊",
+    "active": true
+  },
+  {
+    "id": 40,
+    "name": "Acetaminofén 500mg",
+    "category": "Fármacos",
+    "priceUsd": 0.15,
+    "icon": "💊",
+    "active": true
+  },
+  {
+    "id": 41,
+    "name": "Doritos Mega Queso",
+    "category": "Chucherías",
+    "priceUsd": 1.3,
+    "icon": "🔺",
+    "active": true
+  },
+  {
+    "id": 42,
+    "name": "De Todito Mix",
+    "category": "Chucherías",
+    "priceUsd": 1.3,
+    "icon": "🍿",
+    "active": true
+  },
+  {
+    "id": 43,
+    "name": "Pepito Clásico",
+    "category": "Chucherías",
+    "priceUsd": 0.9,
+    "icon": "🌽",
+    "active": true
+  },
+  {
+    "id": 44,
+    "name": "Tozimix",
+    "category": "Chucherías",
+    "priceUsd": 0.35,
+    "icon": "🥓",
+    "active": true
+  },
+  {
+    "id": 45,
+    "name": "Tradicionales",
+    "category": "Chucherías",
+    "priceUsd": 0.4,
+    "icon": "🍟",
+    "active": true
+  },
+  {
+    "id": 46,
+    "name": "Gomitas Trululu",
+    "category": "Chucherías",
+    "priceUsd": 0.1,
+    "icon": "🍬",
+    "active": true
+  },
+  {
+    "id": 47,
+    "name": "Cheesetris",
+    "category": "Chucherías",
+    "priceUsd": 1.1,
+    "icon": "🧀",
+    "active": true
+  },
+  {
+    "id": 48,
+    "name": "Platanito Natuchips",
+    "category": "Chucherías",
+    "priceUsd": 0.6,
+    "icon": "🍌",
+    "active": true
+  },
+  {
+    "id": 49,
+    "name": "Revolcones Ácidos",
+    "category": "Chucherías",
+    "priceUsd": 0.09,
+    "icon": "🍭",
+    "active": true
+  },
+  {
+    "id": 50,
+    "name": "Raquetí",
+    "category": "Chucherías",
+    "priceUsd": 0.7,
+    "icon": "🥨",
+    "active": true
+  },
+  {
+    "id": 51,
+    "name": "Lisitaz",
+    "category": "Chucherías",
+    "priceUsd": 0.25,
+    "icon": "🥨",
+    "active": true
+  },
+  {
+    "id": 52,
+    "name": "Galletas Brinky",
+    "category": "Chucherías",
+    "priceUsd": 0.35,
+    "icon": "🍪",
+    "active": true
+  },
+  {
+    "id": 53,
+    "name": "Flips Chocolate",
+    "category": "Chucherías",
+    "priceUsd": 0.85,
+    "icon": "🍫",
+    "active": true
+  },
+  {
+    "id": 54,
+    "name": "Nucita Crunch",
+    "category": "Chucherías",
+    "priceUsd": 0.95,
+    "icon": "🌰",
+    "active": true
+  },
+  {
+    "id": 55,
+    "name": "Maxcoco Galleta",
+    "category": "Chucherías",
+    "priceUsd": 0.7,
+    "icon": "🥥",
+    "active": true
+  },
+  {
+    "id": 56,
+    "name": "Chupeta Bon Bon Bum",
+    "category": "Chucherías",
+    "priceUsd": 0.2,
+    "icon": "🍭",
+    "active": true
+  },
+  {
+    "id": 57,
+    "name": "Galletas Saltitacos",
+    "category": "Chucherías",
+    "priceUsd": 0.6,
+    "icon": "🍘",
+    "active": true
+  },
+  {
+    "id": 58,
+    "name": "Galleta Rellena",
+    "category": "Chucherías",
+    "priceUsd": 0.8,
+    "icon": "🍪",
+    "active": true
+  },
+  {
+    "id": 59,
+    "name": "Galleta María Ind. Unidad",
+    "category": "Chucherías",
+    "priceUsd": 0.14,
+    "icon": "🍪",
+    "active": true
+  },
+  {
+    "id": 60,
+    "name": "Galleta María Ind. Paquete",
+    "category": "Chucherías",
+    "priceUsd": 1.3,
+    "icon": "🍪",
+    "active": true
+  },
+  {
+    "id": 61,
+    "name": "Galleta María IT Unidad",
+    "category": "Chucherías",
+    "priceUsd": 0.12,
+    "icon": "🍪",
+    "active": true
+  },
+  {
+    "id": 62,
+    "name": "Galleta María IT Paquete",
+    "category": "Chucherías",
+    "priceUsd": 1.2,
+    "icon": "🍪",
+    "active": true
+  },
+  {
+    "id": 63,
+    "name": "Caramelo Splot",
+    "category": "Chucherías",
+    "priceUsd": 0.3,
+    "icon": "🍬",
+    "active": true
+  },
+  {
+    "id": 64,
+    "name": "Splot Ojos Dulce",
+    "category": "Chucherías",
+    "priceUsd": 0.055,
+    "icon": "👀",
+    "active": true
+  },
+  {
+    "id": 65,
+    "name": "Chicle Revolcón",
+    "category": "Chucherías",
+    "priceUsd": 0.09,
+    "icon": "🍬",
+    "active": true
+  },
+  {
+    "id": 66,
+    "name": "Cheeseking",
+    "category": "Chucherías",
+    "priceUsd": 0.6,
+    "icon": "🧀",
+    "active": true
+  },
+  {
+    "id": 67,
+    "name": "Chesitos",
+    "category": "Chucherías",
+    "priceUsd": 0.35,
+    "icon": "🧀",
+    "active": true
+  },
+  {
+    "id": 68,
+    "name": "Boli Bulls Chicle",
+    "category": "Chucherías",
+    "priceUsd": 0.35,
+    "icon": "🔴",
+    "active": true
+  },
+  {
+    "id": 69,
+    "name": "Cigarro por Unidad",
+    "category": "Chucherías",
+    "priceUsd": 0.079,
+    "icon": "🚬",
+    "active": true
+  },
+  {
+    "id": 70,
+    "name": "Cigarro Cajetilla",
+    "category": "Chucherías",
+    "priceUsd": 1.59,
+    "icon": "🚬",
+    "active": true
+  },
+  {
+    "id": 71,
+    "name": "Arroz Blanco 1kg",
+    "category": "Víveres",
+    "priceUsd": 1.3,
+    "icon": "🍚",
+    "active": true
+  },
+  {
+    "id": 72,
+    "name": "Pasta Larga 1kg",
+    "category": "Víveres",
+    "priceUsd": 1.62,
+    "icon": "🍝",
+    "active": true
+  },
+  {
+    "id": 73,
+    "name": "Pasta Corta 1kg",
+    "category": "Víveres",
+    "priceUsd": 1.32,
+    "icon": "🍲",
+    "active": true
+  },
+  {
+    "id": 74,
+    "name": "Harina Mimasa 1kg",
+    "category": "Víveres",
+    "priceUsd": 0.95,
+    "icon": "🌽",
+    "active": true
+  },
+  {
+    "id": 75,
+    "name": "Harina Juana 1kg",
+    "category": "Víveres",
+    "priceUsd": 1.2,
+    "icon": "🫓",
+    "active": true
+  },
+  {
+    "id": 76,
+    "name": "Azúcar Refinada 1kg",
+    "category": "Víveres",
+    "priceUsd": 1.7,
+    "icon": "🧂",
+    "active": true
+  },
+  {
+    "id": 77,
+    "name": "Sal Marina 1kg",
+    "category": "Víveres",
+    "priceUsd": 0.7,
+    "icon": "🧂",
+    "active": true
+  },
+  {
+    "id": 78,
+    "name": "Aceite Mirasol",
+    "category": "Víveres",
+    "priceUsd": 1.5,
+    "icon": "🌻",
+    "active": true
+  },
+  {
+    "id": 79,
+    "name": "Mantequilla Mavesa 500g",
+    "category": "Víveres",
+    "priceUsd": 1.8,
+    "icon": "🧈",
+    "active": true
+  },
+  {
+    "id": 80,
+    "name": "Mayonesa Kraft 445g",
+    "category": "Víveres",
+    "priceUsd": 2.6,
+    "icon": "🍶",
+    "active": true
+  },
+  {
+    "id": 81,
+    "name": "Mayonesa 500g",
+    "category": "Víveres",
+    "priceUsd": 2.66,
+    "icon": "🍶",
+    "active": true
+  },
+  {
+    "id": 82,
+    "name": "Salsa de Tomate Pampero",
+    "category": "Víveres",
+    "priceUsd": 2.0,
+    "icon": "🍅",
+    "active": true
+  },
+  {
+    "id": 83,
+    "name": "Café Molido Fama 250g",
+    "category": "Víveres",
+    "priceUsd": 1.45,
+    "icon": "☕",
+    "active": true
+  },
+  {
+    "id": 84,
+    "name": "Jugo en Polvo Boka",
+    "category": "Víveres",
+    "priceUsd": 0.45,
+    "icon": "🧃",
+    "active": true
+  },
+  {
+    "id": 85,
+    "name": "Aceite Vegetal 900ml",
+    "category": "Víveres",
+    "priceUsd": 3.0,
+    "icon": "🫒",
+    "active": true
+  },
+  {
+    "id": 86,
+    "name": "Aceite Vegetal 250ml",
+    "category": "Víveres",
+    "priceUsd": 1.5,
+    "icon": "🫒",
+    "active": true
+  },
+  {
+    "id": 87,
+    "name": "Salsa Negra / Inglesa",
+    "category": "Víveres",
+    "priceUsd": 1.82,
+    "icon": "🍾",
+    "active": true
+  },
+  {
+    "id": 88,
+    "name": "Leche en Polvo Completa",
+    "category": "Víveres",
+    "priceUsd": 3.9,
+    "icon": "🥛",
+    "active": true
+  },
+  {
+    "id": 89,
+    "name": "Mayonesa en Teta",
+    "category": "Víveres",
+    "priceUsd": 0.25,
+    "icon": "🍶",
+    "active": true
+  },
+  {
+    "id": 90,
+    "name": "Mostaza Preparada",
+    "category": "Víveres",
+    "priceUsd": 0.25,
+    "icon": "🌭",
+    "active": true
+  },
+  {
+    "id": 91,
+    "name": "Aliño Preparado",
+    "category": "Víveres",
+    "priceUsd": 0.35,
+    "icon": "🌿",
+    "active": true
+  },
+  {
+    "id": 92,
+    "name": "Ajo en Pasta",
+    "category": "Víveres",
+    "priceUsd": 0.24,
+    "icon": "🧄",
+    "active": true
+  },
+  {
+    "id": 93,
+    "name": "Cubito Maggi",
+    "category": "Víveres",
+    "priceUsd": 0.15,
+    "icon": "🧊",
+    "active": true
+  },
+  {
+    "id": 94,
+    "name": "Desodorante Roll-on",
+    "category": "Higiene",
+    "priceUsd": 0.7,
+    "icon": "🧴",
+    "active": true
+  },
+  {
+    "id": 95,
+    "name": "Crema Dental Colgate",
+    "category": "Higiene",
+    "priceUsd": 1.8,
+    "icon": "🪥",
+    "active": true
+  },
+  {
+    "id": 96,
+    "name": "Pañal Desechable Unidad",
+    "category": "Higiene",
+    "priceUsd": 0.4,
+    "icon": "👶",
+    "active": true
+  },
+  {
+    "id": 97,
+    "name": "Toallas Sanitarias",
+    "category": "Higiene",
+    "priceUsd": 0.15,
+    "icon": "🌸",
+    "active": true
+  },
+  {
+    "id": 98,
+    "name": "Baño de Crema Nutribella",
+    "category": "Higiene",
+    "priceUsd": 1.35,
+    "icon": "💆",
+    "active": true
+  },
+  {
+    "id": 99,
+    "name": "Jabón Alive",
+    "category": "Higiene",
+    "priceUsd": 0.7,
+    "icon": "🧼",
+    "active": true
+  },
+  {
+    "id": 100,
+    "name": "Jabón Líquido Lemon",
+    "category": "Higiene",
+    "priceUsd": 1.1,
+    "icon": "🍋",
+    "active": true
+  },
+  {
+    "id": 101,
+    "name": "Champú Liso Extremo",
+    "category": "Higiene",
+    "priceUsd": 1.35,
+    "icon": "🧴",
+    "active": true
+  },
+  {
+    "id": 102,
+    "name": "Champú Sachet",
+    "category": "Higiene",
+    "priceUsd": 0.6,
+    "icon": "🧴",
+    "active": true
+  },
+  {
+    "id": 103,
+    "name": "Jabón Las Llaves Panela",
+    "category": "Higiene",
+    "priceUsd": 1.1,
+    "icon": "🧼",
+    "active": true
+  },
+  {
+    "id": 104,
+    "name": "Papel Higiénico (4 rollos)",
+    "category": "Higiene",
+    "priceUsd": 2.5,
+    "icon": "🧻",
+    "active": true
+  },
+  {
+    "id": 105,
+    "name": "Papel Higiénico Individual",
+    "category": "Higiene",
+    "priceUsd": 0.6,
+    "icon": "🧻",
+    "active": true
+  },
+  {
+    "id": 106,
+    "name": "Rasuradora Doble Hoja",
+    "category": "Higiene",
+    "priceUsd": 1.6,
+    "icon": "🪒",
+    "active": true
+  },
+  {
+    "id": 107,
+    "name": "Rasuradora Económica",
+    "category": "Higiene",
+    "priceUsd": 0.32,
+    "icon": "🪒",
+    "active": true
+  },
+  {
+    "id": 108,
+    "name": "Suavizante de Ropa",
+    "category": "Higiene",
+    "priceUsd": 1.0,
+    "icon": "🧺",
+    "active": true
+  },
+  {
+    "id": 109,
+    "name": "Jabón Especial de Tocador",
+    "category": "Higiene",
+    "priceUsd": 1.15,
+    "icon": "🧼",
+    "active": true
+  },
+  {
+    "id": 110,
+    "name": "Limpiador 3B 400ml",
+    "category": "Higiene",
+    "priceUsd": 1.3,
+    "icon": "✨",
+    "active": true
+  }
+];
+</script>
+<script src="app.js"></script>
+</body>
+</html>
